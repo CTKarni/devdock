@@ -4,6 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DevDock — Idea to Deployment</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -1005,6 +1009,10 @@
           </select>
         </div>
       </div>
+      <!-- Honeypot — hidden from humans, visible to bots -->
+      <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+        <input type="text" id="honeypot" name="website" tabindex="-1" autocomplete="off" placeholder="Leave this empty"/>
+      </div>
       <button class="form-submit" onclick="submitForm()">Request Consultation →</button>
     </div>
 
@@ -1055,14 +1063,98 @@
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // Form submit
+  // Disposable email domains blocklist
+  const BLOCKED_DOMAINS = [
+    'mailinator.com','tempmail.com','guerrillamail.com','10minutemail.com',
+    'throwaway.email','yopmail.com','fakeinbox.com','trashmail.com',
+    'dispostable.com','sharklasers.com','spamgourmet.com','maildrop.cc',
+    'getairmail.com','spamfree24.org','mailnull.com','spamhere.com',
+    'filzmail.com','spam4.me','binkmail.com','bob.email'
+  ];
+
+  // Obviously fake name patterns
+  const FAKE_NAMES = ['test','hello','asdf','qwerty','admin','user','abc','xyz','fake','dummy','null','none','na','n/a'];
+
+  // Obviously fake email patterns
+  const FAKE_EMAILS = [
+    'test@test.com','hello@gmail.com','test@gmail.com','admin@admin.com',
+    'fake@fake.com','user@user.com','abc@abc.com','example@example.com',
+    'test@yahoo.com','hello@yahoo.com','dummy@gmail.com','noone@gmail.com'
+  ];
+
+  function isValidEmail(email) {
+    // Basic format check
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) return { valid: false, reason: 'Invalid email format.' };
+
+    const lower = email.toLowerCase();
+
+    // Block known fake emails
+    if (FAKE_EMAILS.includes(lower)) return { valid: false, reason: 'Please enter a real email address.' };
+
+    // Block disposable domains
+    const domain = lower.split('@')[1];
+    if (BLOCKED_DOMAINS.includes(domain)) return { valid: false, reason: 'Disposable email addresses are not allowed.' };
+
+    // Block emails where local part is too short or just numbers
+    const local = lower.split('@')[0];
+    if (local.length < 3) return { valid: false, reason: 'Please enter a valid email address.' };
+
+    return { valid: true };
+  }
+
+  function isValidName(name) {
+    if (name.length < 3) return { valid: false, reason: 'Name must be at least 3 characters.' };
+    if (FAKE_NAMES.includes(name.toLowerCase().trim())) return { valid: false, reason: 'Please enter your real name.' };
+    if (/^[^a-zA-Z]+$/.test(name)) return { valid: false, reason: 'Name must contain letters.' };
+    return { valid: true };
+  }
+
+  function isValidPhone(phone) {
+    const digits = phone.replace(/[\s\-\+]/g, '');
+    if (!/^\d+$/.test(digits)) return { valid: false, reason: 'Phone number must contain only digits.' };
+    // Accept 10 digits or 12 digits with country code (91XXXXXXXXXX)
+    if (digits.length === 10) return { valid: true };
+    if (digits.length === 12 && digits.startsWith('91')) return { valid: true };
+    return { valid: false, reason: 'Please enter a valid 10-digit mobile number.' };
+  }
+
   async function submitForm() {
     const name    = document.getElementById('f-name').value.trim();
     const phone   = document.getElementById('f-phone').value.trim();
     const email   = document.getElementById('f-email').value.trim();
     const title   = document.getElementById('f-title').value.trim();
 
+    // Honeypot check — if filled, it's a bot
+    const honeypot = document.getElementById('honeypot').value;
+    if (honeypot) {
+      // Silently fake success to fool bots
+      document.getElementById('booking-form').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+      return;
+    }
+
+    // Required fields
     if (!name || !phone || !email || !title) {
-      alert('Please fill in at least your Name, mobile number, Email, and Project Title.');
+      alert('Please fill in your Name, mobile number, Email, and Project Title.');
+      return;
+    }
+
+    // Name validation
+    const nameCheck = isValidName(name);
+    if (!nameCheck.valid) { alert(nameCheck.reason); return; }
+
+    // Email validation
+    const emailCheck = isValidEmail(email);
+    if (!emailCheck.valid) { alert(emailCheck.reason); return; }
+
+    // Phone validation
+    const phoneCheck = isValidPhone(phone);
+    if (!phoneCheck.valid) { alert(phoneCheck.reason); return; }
+
+    // Title minimum length
+    if (title.length < 5) {
+      alert('Please enter a proper project title (at least 5 characters).');
       return;
     }
 
