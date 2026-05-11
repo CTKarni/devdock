@@ -1055,7 +1055,7 @@
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // Form submit
-  function submitForm() {
+  async function submitForm() {
     const name    = document.getElementById('f-name').value.trim();
     const phone   = document.getElementById('f-phone').value.trim();
     const email   = document.getElementById('f-email').value.trim();
@@ -1066,21 +1066,50 @@
       return;
     }
 
-    // Build Telegram message
-    const branch  = document.getElementById('f-branch').value;
-    const year    = document.getElementById('f-year').value;
-    const desc    = document.getElementById('f-desc').value;
-    const plan    = document.getElementById('f-plan').value;
-    const time    = document.getElementById('f-time').value;
-    const type    = document.querySelector('input[name="type"]:checked')?.value || 'Not specified';
+    const payload = {
+      name,
+      email,
+      phone,
+      college:     document.getElementById('f-college').value,
+      branch:      document.getElementById('f-branch').value,
+      year:        document.getElementById('f-year').value,
+      title,
+      description: document.getElementById('f-desc').value,
+      projectType: document.querySelector('input[name="type"]:checked')?.value || 'Not specified',
+      plan:        document.getElementById('f-plan').value,
+      contactTime: document.getElementById('f-time').value,
+    };
 
-    const msg = `Hi DevDock! 👋\n\n*New Project Request*\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nCollege: ${document.getElementById('f-college').value}\nBranch: ${branch}\nYear: ${year}\n\nProject: ${title}\nType: ${type}\nPlan: ${plan}\nBest time to call: ${time}\n\nDescription:\n${desc}`;
+    const btn = document.querySelector('.form-submit');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
 
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://t.me/devdockk?text=${encoded}`, '_blank');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    document.getElementById('booking-form').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        document.getElementById('booking-form').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'block';
+      } else {
+        alert('Something went wrong. Please try again or contact us directly on Telegram @devdockk');
+        btn.textContent = 'Request Consultation →';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+
+    } catch (err) {
+      alert('Network error. Please check your connection and try again.');
+      btn.textContent = 'Request Consultation →';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
   }
 </script>
 </body>
