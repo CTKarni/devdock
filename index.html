@@ -635,6 +635,7 @@
 
     .carousel-slide {
       width: 360px;
+      max-width: calc(100vw - 48px);
       flex-shrink: 0;
       will-change: transform, opacity;
     }
@@ -1674,6 +1675,11 @@
     }
 
     @media (max-width: 768px) {
+      .carousel-track-wrap {
+        padding: 20px 0;
+        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+      }
       nav {
         height: 70px;
       }
@@ -2568,16 +2574,24 @@
           track.appendChild(clone);
         });
 
-        // Set the --scroll-width CSS variable dynamically
-        const slideWidth = 360;
-        const gap = 24;
-        const scrollWidth = slides.length * (slideWidth + gap);
-        track.style.setProperty('--scroll-width', `${scrollWidth}px`);
-
-        // Fisheye Scroll Animation Loop
         const wrap = document.querySelector('.carousel-track-wrap');
         const allSlides = Array.from(track.children);
 
+        // Dynamically compute the scroll width on load and resize
+        const updateScrollWidth = () => {
+          const firstSlide = allSlides[0];
+          if (firstSlide) {
+            const slideWidth = firstSlide.getBoundingClientRect().width;
+            const gap = 24;
+            const scrollWidth = slides.length * (slideWidth + gap);
+            track.style.setProperty('--scroll-width', `${scrollWidth}px`);
+          }
+        };
+
+        updateScrollWidth();
+        window.addEventListener('resize', updateScrollWidth);
+
+        // Fisheye Scroll Animation Loop
         function updateFisheye() {
           if (!wrap) return;
           const wrapRect = wrap.getBoundingClientRect();
