@@ -1621,6 +1621,92 @@
       transition: var(--transition-smooth);
     }
 
+    /* ── MOBILE MENU STYLES ── */
+    .mobile-menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-main);
+      padding: 8px;
+      z-index: 1100;
+      transition: var(--transition-smooth);
+      align-items: center;
+      justify-content: center;
+    }
+    .mobile-menu-toggle svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-main);
+    }
+    
+    .mobile-nav-overlay {
+      position: fixed;
+      top: 80px; /* Under navbar height */
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+      transition: var(--transition-smooth);
+      border-bottom: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .mobile-nav-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .mobile-nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+      padding: 40px 24px;
+    }
+
+    .mobile-nav-links li {
+      width: 100%;
+      text-align: center;
+    }
+
+    .mobile-nav-links a {
+      font-family: var(--font-sans);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-main);
+      text-decoration: none;
+      transition: var(--transition-smooth);
+      display: inline-block;
+      padding: 8px 16px;
+    }
+
+    .mobile-nav-links a:hover {
+      color: var(--accent);
+    }
+
+    .mobile-nav-links .btn-primary {
+      display: inline-flex;
+      width: 100%;
+      max-width: 280px;
+      justify-content: center;
+      padding: 14px 28px;
+      font-size: 15px;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
       .hero-grid {
@@ -1639,7 +1725,7 @@
         max-width: 500px;
         margin: 40px auto 0;
       }
-      .vibe-grid {
+      .deliverable-grid {
         grid-template-columns: 1fr;
         gap: 48px;
       }
@@ -1675,6 +1761,21 @@
     }
 
     @media (max-width: 768px) {
+      .mobile-menu-toggle {
+        display: flex;
+      }
+      .mobile-nav-overlay {
+        top: 70px;
+      }
+      #vibe, #projects, #showcase, #pricing, #process, #standards, #booking, footer {
+        padding: 60px 0;
+      }
+      #cta-block {
+        padding: 50px 0;
+      }
+      .cta-card {
+        padding: 40px 24px;
+      }
       .carousel-track-wrap {
         padding: 20px 0;
         mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
@@ -1716,6 +1817,60 @@
         text-align: center;
       }
     }
+
+    @media (max-width: 520px) {
+      .node-graph-container {
+        width: 480px;
+        flex-shrink: 0;
+        transform: scale(0.8);
+        transform-origin: center center;
+        margin-top: -40px;
+        margin-bottom: -40px;
+      }
+    }
+    @media (max-width: 400px) {
+      .node-graph-container {
+        width: 480px;
+        flex-shrink: 0;
+        transform: scale(0.68);
+        transform-origin: center center;
+        margin-top: -65px;
+        margin-bottom: -65px;
+      }
+    }
+    @media (max-width: 480px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        text-align: center;
+      }
+      .booking-container {
+        padding: 24px 16px;
+        border-radius: 20px;
+      }
+      .form-grid {
+        gap: 16px;
+      }
+      .radio-group {
+        gap: 8px;
+      }
+      .radio-option {
+        padding: 10px 16px;
+        font-size: 13px;
+        flex-grow: 1;
+        justify-content: center;
+      }
+      .telegram-fab {
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+      }
+      .telegram-fab svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1739,9 +1894,25 @@
           <li><a href="#standards">Standards</a></li>
           <li><a href="#booking" class="btn btn-primary nav-cta-btn">Initialize Project</a></li>
         </ul>
+        <button class="mobile-menu-toggle" aria-label="Toggle Menu" aria-expanded="false">
+          <i data-lucide="menu" class="menu-icon"></i>
+          <i data-lucide="x" class="close-icon" style="display: none;"></i>
+        </button>
       </div>
     </div>
   </nav>
+
+  <!-- MOBILE NAVIGATION OVERLAY -->
+  <div class="mobile-nav-overlay">
+    <ul class="mobile-nav-links">
+      <li><a href="#vibe">Services</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#standards">Standards</a></li>
+      <li><a href="#booking" class="btn btn-primary nav-cta-btn">Initialize Project</a></li>
+    </ul>
+  </div>
 
   <!-- HERO SECTION -->
   <section id="hero">
@@ -2393,6 +2564,42 @@
   <script>
     // Lucide Icons initialization
     lucide.createIcons();
+
+    // Mobile navigation toggle logic
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileOverlay = document.querySelector('.mobile-nav-overlay');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a');
+
+    function toggleMobileMenu() {
+      const isActive = mobileOverlay.classList.toggle('active');
+      mobileToggle.setAttribute('aria-expanded', isActive);
+      
+      const menuIcon = mobileToggle.querySelector('.menu-icon');
+      const closeIcon = mobileToggle.querySelector('.close-icon');
+      
+      if (isActive) {
+        if (menuIcon) menuIcon.style.display = 'none';
+        if (closeIcon) closeIcon.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      } else {
+        if (menuIcon) menuIcon.style.display = 'block';
+        if (closeIcon) closeIcon.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    if (mobileToggle) {
+      mobileToggle.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Close mobile menu when a link is clicked
+    mobileNavLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (mobileOverlay && mobileOverlay.classList.contains('active')) {
+          toggleMobileMenu();
+        }
+      });
+    });
 
     // Radio select option
     function selectRadio(el) {
